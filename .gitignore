@@ -1,0 +1,12 @@
+__pycache__
+logs
+logs_bin
+build
+dist
+*.egg-info
+*.test*
+.temp
+venv/
+test.py
+.DS_Store
+tmp.*
