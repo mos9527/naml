@@ -20,7 +20,7 @@ on:
      
 jobs:
   build-and-release:
-    if: contains(github.event.workflow_run.head_commit.message, 'Version') || github.event.inputs.release_pypi || github.event.inputs.release_github
+    if: contains(github.event.head_commit.message, 'Version') || github.event.inputs.release_pypi || github.event.inputs.release_github
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
@@ -33,10 +33,10 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install setuptools wheel build twine 
     - name: Build package (PyPI)
-      if: contains(github.event.workflow_run.head_commit.message, 'Version') || github.event.inputs.release_pypi
+      if: contains(github.event.head_commit.message, 'Version') || github.event.inputs.release_pypi
       run: python -m build --no-isolation
     - name: Publish package (PyPI)
-      if: contains(github.event.workflow_run.head_commit.message, 'Version') || github.event.inputs.release_pypi
+      if: contains(github.event.head_commit.message, 'Version') || github.event.inputs.release_pypi
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
