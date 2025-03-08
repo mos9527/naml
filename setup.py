@@ -31,6 +31,7 @@ setuptools.setup(
         "torch==2.6.0",
         "torchaudio==2.6.0",
         "torchvision==0.21.0",
+        "nbformat",
         "tqdm",
     ],
     python_requires="~=3.10",

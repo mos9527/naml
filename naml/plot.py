@@ -1,4 +1,5 @@
-from . import *
+from naml.modules import Generator, Tuple, List
+from naml.modules import torch, plt, tqdm, np
 
 
 def simple(m: torch.tensor, title: str = ""):
@@ -14,7 +15,6 @@ def simple_animated(
     label_x: str = "epoch",
     labels_y: List[str] = ["loss"],
     title: str = "",
-    clear: bool = False,
 ):
     from IPython import display
 
