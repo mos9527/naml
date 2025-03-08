@@ -57,6 +57,7 @@ def heatmap(
     if m.ndim == 4:
         nrow, ncol = m.size()[:2]
     else:
+        assert m.ndim == 2
         nrow, ncol = 1, 1
     fig, axes = plt.subplots(nrow, ncol, squeeze=False)
     for i in range(nrow):
