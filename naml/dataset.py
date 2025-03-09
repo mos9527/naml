@@ -1,7 +1,9 @@
+from naml import __version__
 from naml.modules import tqdm
 from dataclasses import dataclass, field, asdict, InitVar
 from concurrent.futures import ThreadPoolExecutor, Future
 import os, requests, time, json, hashlib, zlib, logging
+import zipfile
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +53,9 @@ class DatasetLocal:
         with open(self.fullpath, "r", encoding=encoding) as f:
             return f.readlines()
 
+    def as_zip(self):
+        return zipfile.ZipFile(self.fullpath, "r")
+
 
 class Datasets(requests.Session):
     DB_NAME = "naml_datasets.json"
@@ -66,6 +71,12 @@ class Datasets(requests.Session):
         self.__executor = ThreadPoolExecutor(max_workers=max_workers)
         self.__futures = []
         self.__stoarge = os.environ.get("NAML_DATASET_STORAGE", None) or storage_path
+        self.headers.update(
+            {
+                "User-Agent": "NAML/%s" % __version__,
+                "Accept-Encoding": "gzip, deflate",
+            }
+        )
         self.load()
 
     @property

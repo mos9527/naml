@@ -107,3 +107,20 @@ def kernel_regression(
     plt.scatter(x_train, y_train, label="Train", color="red")
     plt.legend()
     plt.grid()
+
+
+def histogram(
+    x: torch.Tensor,
+    title: str = "",
+    legend: str = None,
+    label_x: str = "",
+    label_y: str = "",
+):
+    plt.hist(x)
+    plt.title(title)
+    plt.xlabel(label_x)
+    plt.ylabel(label_y)
+    if legend:
+        plt.legend(legend)
+    plt.grid()
+    plt.show()
