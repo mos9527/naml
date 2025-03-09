@@ -4,9 +4,7 @@ from functools import wraps
 from typing import Callable
 
 
-def run_epochs(
-    title: str = "",
-):
+def run_epochs(title: str = ""):
     """Wraps a function that trains a model and returns the loss over epochs."""
 
     def _wrapper(fn) -> Callable:
@@ -14,8 +12,8 @@ def run_epochs(
         def _inner(n_epochs: int, *args, **kwargs):
             def _generator():
                 for epoch in tqdm(range(n_epochs)):
-                    loss = fn(*args, **kwargs)
-                    yield (loss,)
+                    val = fn(*args, **kwargs)
+                    yield (val,)
 
             simple_animated(_generator(), title=title)
 

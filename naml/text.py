@@ -1,9 +1,9 @@
 from collections import Counter
-from naml.modules import List, Dict, Tuple
+from naml.modules import List, Dict, Tuple, torch
 
 
 class Vocabulary(dict):
-    reserved = ["<unk>"]
+    reserved: List[str] = ["<unk>"]
     ivocab: List[str]  # index -> word, ordered by frequency
 
     @staticmethod
@@ -18,7 +18,8 @@ class Vocabulary(dict):
     def to_corpus(tokens: List[List[str]]) -> List[str]:
         return [token for line in tokens for token in line]
 
-    def __init__(self, corpus: List[str | List[str]]):
+    def __init__(self, corpus: List[str | List[str]], reserved: List[str] = ["<unk>"]):
+        self.reserved = reserved
         counter = Counter(corpus)
         self.ivocab = []
         items = counter.most_common()
@@ -34,14 +35,14 @@ class Vocabulary(dict):
         self.ivocab += [word for word, count in items]
 
     @property
-    def unqiue_tokens(self) -> List[str]:
+    def top_tokens(self) -> List[str]:
         return list(self.keys())[len(self.reserved) :]
 
     def freqs(self, tokens: List[str]) -> List[int]:
         return [self[token][1] for token in tokens]
 
-    def to_indices(self, tokens: List[str]) -> List[int]:
-        return [self[token][0] for token in tokens]
+    def to_indices(self, tokens: List[str]) -> torch.Tensor:
+        return torch.Tensor([self[token][0] for token in tokens])
 
-    def to_tokens(self, indices: List[int]) -> List[str]:
+    def to_tokens(self, indices: torch.Tensor) -> List[str]:
         return [self.ivocab[index] for index in indices]

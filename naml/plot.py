@@ -1,5 +1,5 @@
 from naml.modules import Generator, Tuple, List
-from naml.modules import torch, plt, np
+from naml.modules import torch, plt, np, tqdm
 
 
 def simple(
