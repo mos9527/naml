@@ -35,6 +35,7 @@ setuptools.setup(
         "tqdm",
         "requests",
         "pytest",
+        "ipywidgets",
     ],
     python_requires="~=3.10",
 )
