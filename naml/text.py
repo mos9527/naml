@@ -34,14 +34,14 @@ class Vocabulary(dict):
         self.ivocab += [word for word, count in items]
 
     @property
-    def unqiue_tokens(self):
+    def unqiue_tokens(self) -> List[str]:
         return list(self.keys())[len(self.reserved) :]
 
-    def freqs(self, tokens: List[str]):
+    def freqs(self, tokens: List[str]) -> List[int]:
         return [self[token][1] for token in tokens]
 
-    def to_indices(self, tokens: List[str]):
+    def to_indices(self, tokens: List[str]) -> List[int]:
         return [self[token][0] for token in tokens]
 
-    def to_tokens(self, indices: List[int]):
+    def to_tokens(self, indices: List[int]) -> List[str]:
         return [self.ivocab[index] for index in indices]

@@ -1,7 +1,7 @@
 from naml.modules import tqdm
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field, asdict, InitVar
 from concurrent.futures import ThreadPoolExecutor, Future
-import os, requests, time, json, hashlib, logging
+import os, requests, time, json, hashlib, zlib, logging
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ class DatasetRemote:
     md5sum: str | None = None
 
     def __hash__(self):
-        return hash(self.name) ^ hash(self.url) ^ hash(self.md5sum)
+        return zlib.crc32((self.name + self.url + (self.md5sum or "")).encode("utf-8"))
 
     def __eq__(self, other):
         return hash(self) == hash(other)
@@ -24,23 +24,36 @@ class DatasetLocal:
     path: str
     last_updated: float
 
+    parent: InitVar["Datasets"] = None
+
+    @property
+    def fullpath(self):
+        return os.path.join(self.parent.storage, self.path)
+
+    @property
+    def exists(self):
+        return os.path.exists(self.fullpath)
+
     def remove(self):
-        if os.path.exists(self.path):
-            if os.path.isfile(self.path):
-                os.remove(self.path)
+        if self.exists:
+            if os.path.isfile(self.fullpath):
+                os.remove(self.fullpath)
             else:
-                os.rmdir(self.path)
+                os.rmdir(self.fullpath)
+
+    def __post_init__(self, parent):
+        self.parent = parent
 
     def __eq__(self, value):
         raise NotImplementedError("DatasetLocal is not comparable")
 
     def readlines(self, encoding="utf-8"):
-        with open(self.path, "r", encoding=encoding) as f:
+        with open(self.fullpath, "r", encoding=encoding) as f:
             return f.readlines()
 
 
 class Datasets(requests.Session):
-    DB_NAME = ".naml.json"
+    DB_NAME = "naml_datasets.json"
     database: dict[str, DatasetLocal]
 
     __executor: ThreadPoolExecutor
@@ -91,11 +104,11 @@ class Datasets(requests.Session):
             if remote.md5sum:
                 print(remote.md5sum)
                 assert md5.hexdigest() == remote.md5sum, "Bad MD5"
-            opath = os.path.join(self.storage, remote.name)
+            fname = f"{hash(remote)}_{remote.name}"
+            opath = os.path.join(self.storage, fname)
             os.replace(path, opath)
             self.database[remote] = DatasetLocal(
-                path=opath,
-                last_updated=time.time(),
+                path=fname, last_updated=time.time(), parent=self
             )
         except Exception as e:
             if os.path.exists(path):
@@ -168,7 +181,13 @@ class Datasets(requests.Session):
                     for key, value in db:
                         # XXX: This can be recursively defined. Enough for our use case here though.
                         remote = DatasetRemote(**key)
-                        self.database[remote] = DatasetLocal(**value)
+                        local = DatasetLocal(parent=self, **value)
+                        if not local.exists:
+                            logging.warning(
+                                f"Missing dataset: {remote.name}, {local.fullpath}"
+                            )
+                            continue
+                        self.database[remote] = local
                     logging.info(f"entries={path}")
             except Exception as e:
                 logging.error(f"Failed to load dataset database: {e}")

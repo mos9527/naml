@@ -1,7 +1,6 @@
 from naml.modules import torch, nn
 
 
-# https://github.com/d2l-ai/d2l-zh/blob/master/d2l/torch.py#L988
 def sequence_mask(
     X: torch.Tensor, lens: torch.Tensor, value: torch.Tensor
 ) -> torch.Tensor:
