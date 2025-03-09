@@ -7,6 +7,6 @@ class Seq2SeqEncoder(nn.Module):
         self.embedding = nn.Embedding(n_vocab, n_embedding)
         self.rnn = nn.GRU(n_embedding, n_hidden, n_layer, dropout=dropout_p)
 
-    def forward(self, X : torch.Tensor):
+    def forward(self, X: torch.Tensor):
         # X[batch_size, n_step, n_embedding]
-        
+        pass

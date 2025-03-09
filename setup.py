@@ -33,6 +33,8 @@ setuptools.setup(
         "torchvision==0.21.0",
         "nbformat",
         "tqdm",
+        "requests",
+        "pytest",
     ],
     python_requires="~=3.10",
 )

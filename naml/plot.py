@@ -1,17 +1,37 @@
 from naml.modules import Generator, Tuple, List
-from naml.modules import torch, plt, tqdm, np
+from naml.modules import torch, plt, np
 
 
-def simple(m: torch.tensor, title: str = ""):
-    plt.plot(m.detach().cpu().numpy())
+def simple(
+    m: torch.tensor | List[List[float]],
+    title: str = "",
+    scale_x="linear",
+    scale_y="linear",
+    label_x="",
+    labels_y=[""],
+    **kwargs,
+):
+    fig, ax = plt.subplots(1, 1)
+    ax.set_xscale(scale_x)
+    ax.set_yscale(scale_y)
+    ax.set_xlabel(label_x)
+    if type(m) == torch.Tensor:
+        ax.plot(m.detach().cpu().numpy(), **kwargs)
+    else:
+        assert type(m[0]) == list, "m should be a list of lists"
+        for i, y in enumerate(m):
+            ax.plot(y, label=labels_y[i], color=f"C{i}", **kwargs)
     plt.title(title)
     plt.grid()
+    plt.legend()
 
 
 def simple_animated(
     m: Generator[Tuple[float], None, None],
     n_dim: int = 1,
     x_lim_min: float = 1,
+    scale_x="linear",
+    scale_y="linear",
     label_x: str = "epoch",
     labels_y: List[str] = ["loss"],
     title: str = "",
@@ -25,6 +45,8 @@ def simple_animated(
     lines = [ax.add_line(plt.Line2D([], [])) for _ in range(n_dim)]
     px, pys = np.array([]), [np.array([]) for _ in range(n_dim)]
     ax.set_xlabel(label_x)
+    ax.set_xscale(scale_x)
+    ax.set_yscale(scale_y)
     for i, label_y in enumerate(labels_y):
         lines[i].set_label(label_y)
         lines[i].set_color(f"C{i}")

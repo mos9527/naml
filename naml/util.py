@@ -1,4 +1,5 @@
-from naml.plot import simple_animated, tqdm, Generator
+from naml.modules import tqdm
+from naml.plot import simple_animated, Generator
 from functools import wraps
 from typing import Callable
 
