@@ -13,7 +13,7 @@ setuptools.setup(
     version=__version__,
     author="mos9527",
     author_email="greats3an@gmail.com",
-    description="Not Another Machine Learning library (better name pending)",
+    description="Naml is Another Machine Learning library (better name pending)",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/mos9527/naml",
