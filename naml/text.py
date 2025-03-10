@@ -2,6 +2,13 @@ from collections import Counter
 from naml.modules import List, Dict, Tuple, Set, Generator, torch, F
 
 
+def replace_multiple(s: str, src: List[str], to: str) -> str:
+    """Replace multiple patterns in a string with a single pattern."""
+    for i in src:
+        s = s.replace(i, to)
+    return s
+
+
 def tokenize_line(
     s: str, keep_sep: Set[str] | str, remove_sep: Set[str] | str
 ) -> Generator[str, None, None]:
