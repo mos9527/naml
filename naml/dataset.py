@@ -1,6 +1,6 @@
 from naml import __version__
 from naml.modules import tqdm
-from dataclasses import dataclass, field, asdict, InitVar
+from dataclasses import dataclass, asdict, InitVar
 from concurrent.futures import ThreadPoolExecutor, Future
 import os, requests, time, json, hashlib, zlib, logging
 import zipfile

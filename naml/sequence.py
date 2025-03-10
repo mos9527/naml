@@ -1,9 +1,10 @@
-from naml.modules import torch, nn, Generator, Tuple
+from naml.modules import torch, nn, Generator, Tuple, Iterable
 
 
 def sequence_mask(
     X: torch.Tensor, lens: torch.Tensor, value: torch.Tensor
 ) -> torch.Tensor:
+    """Mask the elements of a sequence that are beyond the respective lengths by a value."""
     assert X.dim() == 2
     mask = torch.arange(X.size(1)).unsqueeze(0) < lens.unsqueeze(1)
     X[~mask] = value
@@ -11,6 +12,9 @@ def sequence_mask(
 
 
 def softmax_mask(X: torch.Tensor, lens: torch.Tensor):
+    """Apply softmax to a sequence and mask the elements that are beyond the respective lengths.
+    Masked values are in effect set to zero.
+    """
     shape = X.shape
     X = X.reshape(-1, shape[-1])
     if lens.dim() == 1:
@@ -23,10 +27,15 @@ def softmax_mask(X: torch.Tensor, lens: torch.Tensor):
     return X
 
 
-def seq_partition_sample_random(
+def seq_partition_sample_random_iter(
     X: torch.Tensor, batch_size: int, n_step: int
 ) -> Generator[Tuple[torch.Tensor, torch.Tensor], None, None]:
-    assert X.size(0) >= 2 * batch_size * n_step
+    """Builds XY pairs where Y is the next element relative to X in the sequence.
+    Sampled randomly (shuffled) from the sequence, with random start.
+
+    Returns:
+        Generator of [X[batch_size, n_step], Y[batch_size, n_step]] * len(X) // n_step / batch_size
+    """
     X = X[torch.randint(0, n_step - 1, (1,)) :]
     n_subseq = (X.size(0) - 1) // n_step
     o = torch.arange(0, n_subseq) * n_step
@@ -37,9 +46,15 @@ def seq_partition_sample_random(
         yield torch.stack(Xs), torch.stack(Ys)
 
 
-def seq_partition_sample_sequential(
+def seq_partition_sample_sequential_iter(
     X: torch.Tensor, batch_size: int, n_step: int
 ) -> Generator[Tuple[torch.Tensor, torch.Tensor], None, None]:
+    """Builds XY pairs where Y is the next element relative to X in the sequence."
+    Sampled sequentially from the sequence, with random start.
+
+    Returns:
+        Generator of [X[batch_size, n_step], Y[batch_size, n_step]] * len(X) // n_step / batch_size
+    """
     X = X[torch.randint(0, n_step, (1,)) :]
     n_tokens = X.size(0) - 1
     n_tokens -= n_tokens % batch_size
@@ -48,3 +63,12 @@ def seq_partition_sample_sequential(
     n_batch = Xs.size(1) // n_step
     for i in range(0, n_step * n_batch, n_step):
         yield torch.Tensor(Xs[:, i : i + n_step]), torch.Tensor(Ys[:, i : i + n_step])
+
+
+def seq_batched_sample_iter(
+    X: torch.Tensor, batch_size: int
+) -> Generator[torch.Tensor, None, None]:
+    """Builds batches of sequences."""
+    assert X.size(0) % batch_size == 0, "uneven batch size"
+    for i in range(0, X.size(0), batch_size):
+        yield X[i : i + batch_size]
