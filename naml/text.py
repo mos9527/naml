@@ -2,7 +2,7 @@ from collections import Counter
 from naml.modules import List, Dict, Tuple, Set, Generator, torch, F
 
 
-def split_multi(
+def tokenize_line(
     s: str, keep_sep: Set[str] | str, remove_sep: Set[str] | str
 ) -> Generator[str, None, None]:
     """O(kn) in space time helper function to split a string by multiple separators.
@@ -32,19 +32,26 @@ def split_multi(
         yield s[prev:]
 
 
+def tokenize(
+    lines: List[str], keep_sep: Set[str] | str = "", remove_sep: Set[str] | str = " "
+) -> List[List[str]]:
+    """Tokenize a list of lines into a list of list of tokens.
+    See `tokenize_line` for the separator options."""
+    assert type(lines[0]) == str
+    return [
+        [token for token in tokenize_line(line, keep_sep, remove_sep)] for line in lines
+    ]
+
+
+def tokenize_char(lines: List[str]) -> List[List[str]]:
+    """Tokenize a list of lines into a list of list of characters."""
+    assert type(lines[0]) == str
+    return [[token for token in line] for line in lines]
+
+
 class Vocabulary(dict):
     reserved: List[str] = ["<unk>"]
     ivocab: List[str]  # index -> word, ordered by frequency
-
-    @staticmethod
-    def tokenize(lines: List[str]) -> List[List[str]]:
-        assert type(lines[0]) == str
-        return [[token for token in line.split()] for line in lines]
-
-    @staticmethod
-    def tokenize_char(lines: List[str]) -> List[List[str]]:
-        assert type(lines[0]) == str
-        return [[token for token in line] for line in lines]
 
     @staticmethod
     def to_corpus(tokens: List[List[str]]) -> List[str]:
@@ -105,7 +112,7 @@ class Vocabulary(dict):
         return result.long(), lens.long()
 
 
-from naml.sequence import seq_batched_sample_iter
+from naml.sequence import seq_partition_sample_1D_sequential_iter
 
 
 def pair_vocab_batch_sample_iter(
@@ -126,9 +133,9 @@ def pair_vocab_batch_sample_iter(
     X, X_len = src_vocab.to_indices_padded(src_words, num_steps)
     Y, Y_len = tgt_vocab.to_indices_padded(target_words, num_steps)
     for x, x_len, y, y_len in zip(
-        seq_batched_sample_iter(X, batch_size),
-        seq_batched_sample_iter(X_len, batch_size),
-        seq_batched_sample_iter(Y, batch_size),
-        seq_batched_sample_iter(Y_len, batch_size),
+        seq_partition_sample_1D_sequential_iter(X, batch_size),
+        seq_partition_sample_1D_sequential_iter(X_len, batch_size),
+        seq_partition_sample_1D_sequential_iter(Y, batch_size),
+        seq_partition_sample_1D_sequential_iter(Y_len, batch_size),
     ):
         yield x, x_len, y, y_len

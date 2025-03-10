@@ -27,7 +27,7 @@ def softmax_mask(X: torch.Tensor, lens: torch.Tensor):
     return X
 
 
-def seq_partition_sample_random_iter(
+def seq_partition_sample_2D_random_iter(
     X: torch.Tensor, batch_size: int, n_step: int
 ) -> Generator[Tuple[torch.Tensor, torch.Tensor], None, None]:
     """Builds XY pairs where Y is the next element relative to X in the sequence.
@@ -46,7 +46,7 @@ def seq_partition_sample_random_iter(
         yield torch.stack(Xs), torch.stack(Ys)
 
 
-def seq_partition_sample_sequential_iter(
+def seq_partition_sample_2D_sequential_iter(
     X: torch.Tensor, batch_size: int, n_step: int
 ) -> Generator[Tuple[torch.Tensor, torch.Tensor], None, None]:
     """Builds XY pairs where Y is the next element relative to X in the sequence."
@@ -65,10 +65,22 @@ def seq_partition_sample_sequential_iter(
         yield torch.Tensor(Xs[:, i : i + n_step]), torch.Tensor(Ys[:, i : i + n_step])
 
 
-def seq_batched_sample_iter(
+def seq_partition_sample_1D_random_iter(
+    X: torch.Tensor, batch_size: int, shuffle: bool = True
+) -> Generator[torch.Tensor, None, None]:
+    """Builds len(X)/batch_size partitions of a sequence in batch_size, optionally shuffled"""
+    assert X.size(0) % batch_size == 0, "uneven batch size"
+    n_subseq = X.size(0) // batch_size
+    if shuffle:
+        o = torch.randperm(n_subseq) * batch_size
+    else:
+        o = torch.arange(n_subseq) * batch_size
+    for i in range(0, n_subseq):
+        yield X[o[i] : o[i] + batch_size]
+
+
+def seq_partition_sample_1D_sequential_iter(
     X: torch.Tensor, batch_size: int
 ) -> Generator[torch.Tensor, None, None]:
-    """Builds batches of sequences."""
-    assert X.size(0) % batch_size == 0, "uneven batch size"
-    for i in range(0, X.size(0), batch_size):
-        yield X[i : i + batch_size]
+    """Builds len(X)/batch_size partitions of a sequence in batch_size, sequentially"""
+    return seq_partition_sample_1D_random_iter(X, batch_size, shuffle=False)
