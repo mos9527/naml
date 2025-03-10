@@ -56,14 +56,15 @@ def tokenize_char(lines: List[str]) -> List[List[str]]:
     return [[token for token in line] for line in lines]
 
 
+def flatten(tokens: List[List[str]]) -> List[str]:
+    """Flatten a list of list of tokens into a list of tokens."""
+    assert type(tokens[0]) == list
+    return [token for line in tokens for token in line]
+
+
 class Vocabulary(dict):
     reserved: List[str] = ["<unk>"]
     ivocab: List[str]  # index -> word, ordered by frequency
-
-    @staticmethod
-    def to_corpus(tokens: List[List[str]]) -> List[str]:
-        assert type(tokens[0]) == list
-        return [token for line in tokens for token in line]
 
     def __init__(
         self,

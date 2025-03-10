@@ -49,7 +49,7 @@ def seq_partition_sample_2D_random_iter(
 def seq_partition_sample_2D_sequential_iter(
     X: torch.Tensor, batch_size: int, n_step: int
 ) -> Generator[Tuple[torch.Tensor, torch.Tensor], None, None]:
-    """Builds XY pairs where Y is the next element relative to X in the sequence."
+    """Builds XY pairs where Y is the next element relative to X in the sequence.
     Sampled sequentially from the sequence, with random start.
 
     Returns:
