@@ -103,3 +103,32 @@ class Vocabulary(dict):
         )
         lens = (result != self[pad_token][0]).sum(dim=1)
         return result.long(), lens.long()
+
+
+from naml.sequence import seq_batched_sample_iter
+
+
+def pair_vocab_batch_sample_iter(
+    src_vocab: Vocabulary,
+    tgt_vocab: Vocabulary,
+    src_words: List[List[str]],
+    target_words: List[List[str]],
+    batch_size: int,
+    num_steps: int,
+) -> Generator[
+    Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor], None, None
+]:
+    """Builds XY pairs where Y is the paried element relative to X in the vocabularies.
+
+    Returns:
+        Generator of [X[batch_size, num_steps], X_len[batch_size], Y[batch_size, num_steps], Y_len[batch_size]]
+    """
+    X, X_len = src_vocab.to_indices_padded(src_words, num_steps)
+    Y, Y_len = tgt_vocab.to_indices_padded(target_words, num_steps)
+    for x, x_len, y, y_len in zip(
+        seq_batched_sample_iter(X, batch_size),
+        seq_batched_sample_iter(X_len, batch_size),
+        seq_batched_sample_iter(Y, batch_size),
+        seq_batched_sample_iter(Y_len, batch_size),
+    ):
+        yield x, x_len, y, y_len
