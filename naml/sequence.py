@@ -1,15 +1,20 @@
 from naml.modules import torch, nn, Generator, Tuple, Iterable
 
+def zero_one_mask(
+    size: Tuple[int,int], lens: torch.Tensor
+):
+    """Generate a 2D mask for a sequence of 0-1 values, where the elements beyond the respective lengths are zeroed."""    
+    assert len(lens) == size[0]
+    return torch.arange(size[1]).unsqueeze(0) < lens.unsqueeze(1)
 
 def sequence_mask(
     X: torch.Tensor, lens: torch.Tensor, value: torch.Tensor
 ) -> torch.Tensor:
     """Mask the elements of a sequence that are beyond the respective lengths by a value."""
     assert X.dim() == 2
-    mask = torch.arange(X.size(1)).unsqueeze(0) < lens.unsqueeze(1)
+    mask = zero_one_mask(X.shape, lens)
     X[~mask] = value
     return X
-
 
 def softmax_mask(X: torch.Tensor, lens: torch.Tensor):
     """Apply softmax to a sequence and mask the elements that are beyond the respective lengths.
@@ -25,7 +30,6 @@ def softmax_mask(X: torch.Tensor, lens: torch.Tensor):
     X = sequence_mask(X, lens, -1e6)
     X = nn.functional.softmax(X.reshape(shape), dim=-1)
     return X
-
 
 def seq_partition_sample_2D_random_iter(
     X: torch.Tensor, batch_size: int, n_step: int
