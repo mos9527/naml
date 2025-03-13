@@ -35,6 +35,9 @@ class ret_accumlated_loss(ret_loss):
         else:
             return (0, )
 
+    def __str__(self):
+        return f"loss: {self.loss / self.n:.4f}, n: {self.n}"
+        
 @dataclass
 class ret_single_loss(ret_loss):
     val : float = 0
@@ -49,7 +52,8 @@ class ret_single_loss(ret_loss):
     def value(self):
         return (self.val, )
 
-
+    def __str__(self):
+        return f"loss: {self.val:.4f}"
 
 def run_epochs(title: str = ""):
     """Wraps a function that trains a model and returns the loss over epochs.
@@ -63,9 +67,12 @@ def run_epochs(title: str = ""):
         @wraps(fn)
         def _inner(n_epochs: int, *args, **kwargs):
             def _generator():
-                for _ in tqdm(range(n_epochs)):
+                progress = tqdm(total=n_epochs, desc=title)
+                for _ in range(n_epochs):
                     acc = fn(*args, **kwargs)
-                    assert isinstance(acc, ret_loss), "Return value must be a `ret_loss` instance."                    
+                    assert isinstance(acc, ret_loss), "Return value must be a `ret_loss` instance."                                        
+                    progress.desc = str(acc)
+                    progress.update(1)
                     yield acc.value
 
             simple_animated(_generator(), title=title)
