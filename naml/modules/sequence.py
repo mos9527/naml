@@ -39,11 +39,11 @@ class Seq2SeqEncoder(nn.Module):
         # self.dense = nn.Linear(num_hiddens, embed_size) 
         # Hidden states are used as is
 
-    def forward(self, X : torch.Tensor, H : torch.Tensor):
+    def forward(self, X : torch.Tensor):
         # X[batch_size, num_steps]
         X = self.embedding(X.T)        
         # X[num_steps, batch_size, embed_size]
-        Y, H = self.rnn(X, H)
+        Y, H = self.rnn(X)
         # Y[num_steps, batch_size,num_hiddens], H[num_layers, batch_size, num_hiddens]
         return Y, H
     

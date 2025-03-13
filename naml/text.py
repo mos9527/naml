@@ -63,14 +63,14 @@ def flatten(tokens: List[List[str]]) -> List[str]:
 
 
 class Vocabulary(dict):
-    reserved: List[str] = ["<unk>"]
+    reserved: List[str]
     ivocab: List[str]  # index -> word, ordered by frequency
 
     def __init__(
         self,
         corpus: List[str | List[str]],
         min_freq: float = 0,
-        reserved: List[str] = ["<unk>", "<pad>", "<eos>"],
+        reserved: List[str] = ["<unk>", "<pad>", "<eos>", "<bos>"],
     ):
         self.reserved = reserved
         counter = Counter(corpus)
@@ -137,6 +137,13 @@ def pair_vocab_batch_sample_iter(
     from naml.sequence import seq_partition_sample_1D_sequential_iter
     X, X_len = src_vocab.to_indices_padded(src_words, num_steps)
     Y, Y_len = tgt_vocab.to_indices_padded(target_words, num_steps)
+    padding = X.shape[0] % batch_size
+    if padding:
+        padding = batch_size - padding
+        X = torch.cat((X, torch.zeros((padding, num_steps), dtype=torch.long)))
+        X_len = torch.cat((X_len, torch.zeros(padding, dtype=torch.long)))
+        Y = torch.cat((Y, torch.zeros((padding, num_steps), dtype=torch.long)))
+        Y_len = torch.cat((Y_len, torch.zeros(padding, dtype=torch.long)))         
     for x, x_len, y, y_len in zip(
         seq_partition_sample_1D_sequential_iter(X, batch_size),
         seq_partition_sample_1D_sequential_iter(X_len, batch_size),
