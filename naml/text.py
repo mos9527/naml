@@ -119,10 +119,6 @@ class Vocabulary(dict):
         lens = (result != self[pad_token][0]).sum(dim=1)
         return result.long(), lens.long()
 
-
-from naml.sequence import seq_partition_sample_1D_sequential_iter
-
-
 def pair_vocab_batch_sample_iter(
     src_vocab: Vocabulary,
     tgt_vocab: Vocabulary,
@@ -138,6 +134,7 @@ def pair_vocab_batch_sample_iter(
     Returns:
         Generator of [X[batch_size, num_steps], X_len[batch_size], Y[batch_size, num_steps], Y_len[batch_size]]
     """
+    from naml.sequence import seq_partition_sample_1D_sequential_iter
     X, X_len = src_vocab.to_indices_padded(src_words, num_steps)
     Y, Y_len = tgt_vocab.to_indices_padded(target_words, num_steps)
     for x, x_len, y, y_len in zip(
