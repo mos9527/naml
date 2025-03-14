@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Set, Any, Union, Generator, TypeVar, Iterable
+from typing import List, Tuple, Dict, Set, Any, Union, Generator, TypeVar, Iterable, Callable
 from tqdm.notebook import tqdm
 import torch
 

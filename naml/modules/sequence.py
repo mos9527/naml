@@ -31,11 +31,11 @@ CrossEntropyLoss expects           Returns with reduction=none
 class Seq2SeqEncoder(nn.Module):
     # GRU for implementation
     # This is a slightly modified version of RNN from the one from Chapter 8
-    def __init__(self, vocab_size, embed_size, num_hiddens, num_layers):
+    def __init__(self, vocab_size, embed_size, num_hiddens, num_layers, dropout_p):
         super().__init__()
-        self.vocab_size, self.embed_size, self.num_hiddens, self.num_layers = vocab_size, embed_size, num_hiddens, num_layers
+        self.vocab_size, self.embed_size, self.num_hiddens, self.num_layers, self.dropout_p = vocab_size, embed_size, num_hiddens, num_layers, dropout_p
         self.embedding = nn.Embedding(vocab_size, embed_size)
-        self.rnn = nn.GRU(embed_size, num_hiddens, num_layers)
+        self.rnn = nn.GRU(embed_size, num_hiddens, num_layers, dropout=dropout_p)
         # self.dense = nn.Linear(num_hiddens, embed_size) 
         # Hidden states are used as is
 
@@ -51,11 +51,11 @@ class Seq2SeqEncoder(nn.Module):
         return torch.zeros((self.num_layers, batch_size, self.num_hiddens), device=device)
     
 class Seq2SeqDecoder(nn.Module):    
-    def __init__(self, vocab_size, embed_size, num_hiddens, num_layers):
+    def __init__(self, vocab_size, embed_size, num_hiddens, num_layers, dropout_p):
         super().__init__()
-        self.vocab_size, self.embed_size, self.num_hiddens, self.num_layers = vocab_size, embed_size, num_hiddens, num_layers
+        self.vocab_size, self.embed_size, self.num_hiddens, self.num_layers, self.dropout_p = vocab_size, embed_size, num_hiddens, num_layers, dropout_p
         self.embedding = nn.Embedding(vocab_size, embed_size)
-        self.rnn = nn.GRU(embed_size + num_hiddens, num_hiddens, num_layers)
+        self.rnn = nn.GRU(embed_size + num_hiddens, num_hiddens, num_layers,dropout=dropout_p)
         # [Embedding | Hidden]
         self.dense = nn.Linear(num_hiddens, vocab_size) 
 
