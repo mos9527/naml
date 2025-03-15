@@ -13,7 +13,7 @@ class AdditiveAttention(nn.Module):
         self.dropout = nn.Dropout(dropout_p)
 
     def forward(
-        self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, lens: torch.Tensor
+        self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, lens: torch.Tensor = None
     ):
         # q[batch_size, n_query, n_hidden], k[batch_size, n_key, n_hidden]
         q, k = self.W_q(q), self.W_k(k)
@@ -26,7 +26,7 @@ class AdditiveAttention(nn.Module):
         # s[batch_size, n_query, n_key, 1]
         scores = scores.squeeze(-1)
         # s[batch_size, n_query, n_key]
-        self.M_w = M_w = softmax_mask(scores, lens)
+        self.M_w = M_w = softmax_mask(scores, lens) if lens is not None else torch.softmax(scores, dim=-1)
         return self.dropout(M_w) @ v
 
 
@@ -36,11 +36,11 @@ class DotProductAttention(nn.Module):
         self.dropout = nn.Dropout(dropout_p)
 
     def forward(
-        self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, lens: torch.Tensor
+        self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, lens: torch.Tensor = None
     ):
         # q[batch_size, n_query, n_hidden], k[batch_size, n_key, n_hidden]
         assert q.shape[-1] == k.shape[-1]
         d = torch.Tensor([q.shape[-1]]).float()
         scores = (q @ k.transpose(1, 2)) / torch.sqrt(d)
-        self.M_w = M_w = softmax_mask(scores, lens)
+        self.M_w = M_w = softmax_mask(scores, lens) if lens is not None else torch.softmax(scores, dim=-1)
         return self.dropout(M_w) @ v
