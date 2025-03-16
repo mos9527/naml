@@ -18,9 +18,9 @@ def simple(
     if type(m) == torch.Tensor:
         ax.plot(m.detach().cpu().numpy(), **kwargs)
     else:
-        assert type(m[0]) == list, "m should be a list of lists"
-        for i, y in enumerate(m):
-            ax.plot(y, label=labels_y[i], color=f"C{i}", **kwargs)
+        assert type(m[0]) == list or type(m[0]) == torch.Tensor, "m should be a list of lists or Tensors"
+        for i, m in enumerate(m):
+            ax.plot(m, label=labels_y[i], color=f"C{i}", **kwargs)
     plt.title(title)
     plt.grid()
     plt.legend()
@@ -67,6 +67,27 @@ def simple_animated(
             ax.set_ylim(y_min, y_max)
         disp.update(fig)
     fig.clear()
+
+def xy(
+    x: torch.Tensor,
+    y: torch.Tensor,
+    title: str = "",
+    label_x: str = "",
+    label_y: str = "",
+    legend: List[str] = None,
+    **kwargs,
+):
+    plt.title(title)
+    plt.xlabel(label_x)
+    plt.ylabel(label_y)
+    if y.ndim == 1:
+        plt.plot(x, y, **kwargs)
+    else:
+        for i in range(y.shape[1]):
+            plt.plot(x, y[:, i], **kwargs)
+    plt.legend(legend)            
+    plt.grid()
+    plt.show()
 
 
 def heatmap(

@@ -3,6 +3,8 @@ from naml.sequence import zero_one_mask
 
 class CELWithLengthMask(nn.CrossEntropyLoss):
     def __init__(self, *args, **kwargs):
+        super().__init__(reduction='none')        
+    def forward(self, logits: torch.Tensor, target: torch.Tensor, lens: torch.Tensor):        
         '''Cross Entropy Loss with Length Mask
 
 Shapes:
@@ -20,10 +22,8 @@ CrossEntropyLoss expects           Returns with reduction=none
         ]                          ]                              
     ]                                                        
 ]'''    
-        super().__init__(reduction='none')        
-    def forward(self, logits: torch.Tensor, target: torch.Tensor, lens: torch.Tensor):        
         loss = super().forward(logits.permute(0, 2, 1), target)
-        # Therefore a permute/transpose is needed
+        # ^^ Therefore a permute/transpose is needed
         mask = zero_one_mask(loss.shape, lens)
         loss *= mask
         return loss.mean(dim=1)
@@ -40,9 +40,8 @@ class Seq2SeqEncoder(nn.Module):
         # Hidden states are used as is
 
     def forward(self, X : torch.Tensor):
-        # X[batch_size, num_steps]      
+        '''X[batch_size, num_steps]'''
         if not (X < self.vocab_size).all():
-
             raise "Out of vocabulary"        
         X = self.embedding(X.T)        
         # X[num_steps, batch_size, embed_size]
@@ -63,7 +62,7 @@ class Seq2SeqDecoder(nn.Module):
         self.dense = nn.Linear(num_hiddens, vocab_size) 
 
     def forward(self, X : torch.Tensor, H_enc : torch.Tensor, *args):
-        # X[batch_size, num_steps]
+        '''X[batch_size, num_steps], H_enc[num_layers, batch_size, num_hiddens]'''
         X = self.embedding(X.T)        
         # X[num_steps, batch_size, embed_size]
         C = H_enc[-1].repeat(X.shape[0], 1, 1)
@@ -87,7 +86,7 @@ class Seq2SeqAttentionDecoder(Seq2SeqDecoder):
         self.attention = attn_class(num_hiddens, num_hiddens, num_hiddens, dropout_p)
 
     def forward(self, X : torch.Tensor, H_enc : torch.Tensor, Y_enc : torch.Tensor, lens_enc : torch.Tensor = None):
-        # X[batch_size, num_steps]        
+        '''X[batch_size, num_steps], H_enc[num_layers, batch_size, num_hiddens], Y_enc[num_steps, batch_size, num_hiddens], lens_enc[batch_size]'''
         X = self.embedding(X.T)                
         # X[num_steps, batch_size, embed_size]
         outputs = []
@@ -123,6 +122,7 @@ class EncoderDecoder(nn.Module):
         self.decoder = decoder
         
     def forward(self, X_enc : torch.Tensor, X_dec : torch.Tensor, *decoder_args):
+        '''X_enc[batch_size, num_steps], X_dec[batch_size, num_steps]'''
         Y_enc, H_enc = self.encoder(X_enc)        
         return self.decoder(X_dec, H_enc, Y_enc, *decoder_args)
     

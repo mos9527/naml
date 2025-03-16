@@ -22,6 +22,8 @@ Jupyter Notebooks authored with this library are contained in this repo.
     - [10.2/Attention Pooling/NW Regression](https://github.com/mos9527/naml/blob/main/notebooks/Chapter10/2_nadaraya_watson.ipynb)
     - [10.3/Attention Scoring](https://github.com/mos9527/naml/blob/main/notebooks/Chapter10/3_attention_scoring.ipynb)
     - [10.4/Bahdanau Attention](https://github.com/mos9527/naml/blob/main/notebooks/Chapter10/4_bahdanau.ipynb)
+    - [10.5/Multihead Attention](https://github.com/mos9527/naml/blob/main/notebooks/Chapter10/5_multihead.ipynb)
+    
 # Installation
 ```bash
 pip install naml
