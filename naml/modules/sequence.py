@@ -39,7 +39,7 @@ class Seq2SeqEncoder(nn.Module):
         # self.dense = nn.Linear(num_hiddens, embed_size) 
         # Hidden states are used as is
 
-    def forward(self, X : torch.Tensor):
+    def forward(self, X : torch.Tensor, *args):
         '''X[batch_size, num_steps]'''
         if not (X < self.vocab_size).all():
             raise "Out of vocabulary"        
@@ -121,10 +121,10 @@ class EncoderDecoder(nn.Module):
         self.encoder = encoder
         self.decoder = decoder
         
-    def forward(self, X_enc : torch.Tensor, X_dec : torch.Tensor, *decoder_args):
+    def forward(self, X_enc : torch.Tensor, X_dec : torch.Tensor, lens_enc):
         '''X_enc[batch_size, num_steps], X_dec[batch_size, num_steps]'''
-        Y_enc, H_enc = self.encoder(X_enc)        
-        return self.decoder(X_dec, H_enc, Y_enc, *decoder_args)
+        Y_enc, H_enc = self.encoder(X_enc, lens_enc)
+        return self.decoder(X_dec, H_enc, Y_enc, lens_enc)
     
 
 from naml.modules import List

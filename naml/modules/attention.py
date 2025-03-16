@@ -46,11 +46,11 @@ class DotProductAttention(nn.Module):
         return self.dropout(M_w) @ v
 
 class MultiheadAttention(nn.Module):
-    def __init__(self, n_key, n_query, n_hidden, n_heads, dropout_p, attn_class = DotProductAttention):
+    def __init__(self, n_key, n_query, n_value, n_hidden, n_heads, dropout_p, attn_class = DotProductAttention):
         super().__init__()
         self.W_q = nn.Linear(n_query, n_hidden, bias=False)
         self.W_k = nn.Linear(n_key, n_hidden, bias=False)
-        self.W_v = nn.Linear(n_key, n_hidden, bias=False)
+        self.W_v = nn.Linear(n_value, n_hidden, bias=False)
         self.W_o = nn.Linear(n_hidden, n_hidden, bias=False)        
         self.num_heads = n_heads
         self.head_size = n_hidden // n_heads

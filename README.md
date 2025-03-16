@@ -23,7 +23,8 @@ Jupyter Notebooks authored with this library are contained in this repo.
     - [10.3/Attention Scoring](https://github.com/mos9527/naml/blob/main/notebooks/Chapter10/3_attention_scoring.ipynb)
     - [10.4/Bahdanau Attention](https://github.com/mos9527/naml/blob/main/notebooks/Chapter10/4_bahdanau.ipynb)
     - [10.5/Multihead Attention](https://github.com/mos9527/naml/blob/main/notebooks/Chapter10/5_multihead.ipynb)
-    
+    - [10.6/Self Attention/Positional Encoding](https://github.com/mos9527/naml/blob/main/notebooks/Chapter10/6_self_attention.ipynb)
+    - [10.7/Transformer](https://github.com/mos9527/naml/blob/main/notebooks/Chapter10/7_transformer.ipynb)
 # Installation
 ```bash
 pip install naml
