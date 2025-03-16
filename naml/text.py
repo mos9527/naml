@@ -72,7 +72,7 @@ class Vocabulary(dict):
         min_freq: float = 0,
         reserved: List[str] = ["<unk>", "<pad>", "<eos>", "<bos>"],
     ):
-        self.reserved = reserved
+        self.reserved = set(reserved)
         counter = Counter(corpus)
         self.ivocab = []
         items = counter.most_common()
@@ -81,7 +81,7 @@ class Vocabulary(dict):
         self.update(
             {
                 word: (i + len(self.reserved), count)
-                for i, (word, count) in enumerate(items)
+                for i, (word, count) in enumerate(filter(lambda args: args[0] not in self.reserved,items))
                 if count >= min_freq
             }
         )
@@ -134,9 +134,11 @@ def pair_vocab_batch_sample_iter(
     Returns:
         Generator of [X[batch_size, num_steps], X_len[batch_size], Y[batch_size, num_steps], Y_len[batch_size]]
     """
-    from naml.sequence import seq_partition_sample_1D_sequential_iter
+    from naml.sequence import seq_partition_sample_1D_sequential_iter    
+    src_words = [line + ['<eos>'] for line in src_words]
+    target_words = [line + ['<eos>'] for line in target_words]
     X, X_len = src_vocab.to_indices_padded(src_words, num_steps)
-    Y, Y_len = tgt_vocab.to_indices_padded(target_words, num_steps)
+    Y, Y_len = tgt_vocab.to_indices_padded(target_words, num_steps)    
     padding = X.shape[0] % batch_size
     if padding:
         padding = batch_size - padding

@@ -1,4 +1,5 @@
-from naml.modules import torch, nn, Generator, Tuple, Iterable
+import math
+from naml.modules import torch, nn, Generator, Tuple
 
 def zero_one_mask(
     size: Tuple[int,int], lens: torch.Tensor
@@ -88,3 +89,21 @@ def seq_partition_sample_1D_sequential_iter(
 ) -> Generator[torch.Tensor, None, None]:
     """Builds len(X)/batch_size partitions of a sequence in batch_size, sequentially"""
     return seq_partition_sample_1D_random_iter(X, batch_size, shuffle=False)
+
+from naml.modules import List
+from collections import defaultdict
+# https://zh-v2.d2l.ai/chapter_recurrent-modern/seq2seq.html#id9
+def bleu(pred: List[str], label: List[str], k=2) -> float:
+    """Compute the BLEU score."""
+    k = min(k, min(len(label), len(pred)))
+    ans = math.exp(min(0, 1 - len(label) / len(pred)))
+    for n in range(1, k + 1):
+        matches , ngrams = 0, defaultdict(int)
+        for i in range(len(label) - n + 1):
+            ngrams[tuple(label[i:i + n])] += 1
+        for i in range(len(pred) - n + 1):
+            if ngrams[tuple(pred[i:i + n])] > 0:
+                matches += 1
+                ngrams[tuple(pred[i:i + n])] -= 1
+        ans *= math.pow(matches / (len(pred) - n + 1),math.pow(0.5,n))        
+    return ans

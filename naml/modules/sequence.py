@@ -40,7 +40,10 @@ class Seq2SeqEncoder(nn.Module):
         # Hidden states are used as is
 
     def forward(self, X : torch.Tensor):
-        # X[batch_size, num_steps]
+        # X[batch_size, num_steps]      
+        if not (X < self.vocab_size).all():
+
+            raise "Out of vocabulary"        
         X = self.embedding(X.T)        
         # X[num_steps, batch_size, embed_size]
         Y, H = self.rnn(X)
@@ -147,9 +150,9 @@ def train_seq2seq(
         def run_epoch():
             ret_loss = ret_accumlated_loss()
             optim.zero_grad()
-            for x, x_len, y, y_len in data_iter:
+            for x, x_len, y, y_len in data_iter:                                                
                 bos = torch.Tensor(tgt_vocab.to_indices(["<bos>"] * y.shape[0])).long().reshape(-1,1)
-                y_in = torch.cat([bos, y[:, :-1]], 1) # XXX: Can we do this in data_iter instead?
+                y_in = torch.cat([bos, y[:, :-1]], 1)
                 y_hat, _ = net.forward(x, y_in, x_len)
                 l = loss.forward(y_hat, y, y_len)
                 l.sum().backward()            
@@ -157,7 +160,7 @@ def train_seq2seq(
                 optim.step()
                 ret_loss.update(l.sum().detach(), y_len.sum())
             return ret_loss
-        run_epoch(epochs)
+        run_epoch(epochs)        
 
 def predict_seq2seq(net : EncoderDecoder, src_indices : torch.Tensor, tgt_vocab : Vocabulary, num_steps : int):
     net.eval()
@@ -170,4 +173,7 @@ def predict_seq2seq(net : EncoderDecoder, src_indices : torch.Tensor, tgt_vocab 
         Y_hat, H = net.decoder.forward(X_dec, H, Y_enc)
         X_dec = Y_hat.argmax(dim=2)
         pred = X_dec.squeeze(0).long().item()
-        yield tgt_vocab.to_tokens([pred])[0]
+        ret = tgt_vocab.to_tokens([pred])[0]
+        if ret == "<eos>":
+            break
+        yield ret
