@@ -80,12 +80,11 @@ class Seq2SeqDecoder(nn.Module):
     def begin_state(self, device : torch.device, batch_size : int):
         return torch.zeros((self.num_layers, batch_size, self.num_hiddens), device=device)
 
-from naml.modules.attention import AdditiveAttention
+from naml.modules.attention import AdditiveAttention, DotProductAttention
 class Seq2SeqAttentionDecoder(Seq2SeqDecoder):
-    def __init__(self, vocab_size, embed_size, num_hiddens, num_layers, dropout_p):
+    def __init__(self, vocab_size, embed_size, num_hiddens, num_layers, dropout_p, attn_class = AdditiveAttention):
         super().__init__(vocab_size, embed_size, num_hiddens, num_layers, dropout_p)
-        self.attention = AdditiveAttention(num_hiddens, num_hiddens, num_hiddens, dropout_p)
-
+        self.attention = attn_class(num_hiddens, num_hiddens, num_hiddens, dropout_p)
 
     def forward(self, X : torch.Tensor, H_enc : torch.Tensor, Y_enc : torch.Tensor, lens_enc : torch.Tensor = None):
         # X[batch_size, num_steps]        

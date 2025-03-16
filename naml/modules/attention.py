@@ -31,7 +31,7 @@ class AdditiveAttention(nn.Module):
 
 
 class DotProductAttention(nn.Module):
-    def __init__(self, dropout_p):
+    def __init__(self, n_key, n_query, n_hidden, dropout_p):
         super().__init__()
         self.dropout = nn.Dropout(dropout_p)
 
