@@ -31,6 +31,8 @@ class AdditiveAttention(nn.Module):
 
 
 class DotProductAttention(nn.Module):
+    M_w: torch.Tensor
+
     def __init__(self, n_key, n_query, n_hidden, dropout_p):
         super().__init__()
         self.dropout = nn.Dropout(dropout_p)
@@ -46,6 +48,8 @@ class DotProductAttention(nn.Module):
         return self.dropout(M_w) @ v
 
 class MultiheadAttention(nn.Module):
+    M_w: torch.Tensor
+
     def __init__(self, n_key, n_query, n_value, n_hidden, n_heads, dropout_p, attn_class = DotProductAttention):
         super().__init__()
         self.W_q = nn.Linear(n_query, n_hidden, bias=False)
@@ -80,8 +84,12 @@ class MultiheadAttention(nn.Module):
         # q[batch_size * n_heads, n_query, head_size], k[batch_size * n_heads, n_key, head_size], v[batch_size * n_heads, n_key, head_size]
         if lens is not None:
             lens = lens.repeat_interleave(self.num_heads, dim=0)
-        self.M_w = M_w = self.attn(q, k, v, lens)
+        M_w = self.attn.forward(q, k, v, lens)        
         # M_w[batch_size * n_heads, n_query, head_size]
         M_w = self.transpose_output(M_w)
         # M_w[batch_size, n_query, n_hidden]
         return self.W_o(M_w)
+    
+    @property
+    def M_w(self):
+        return self.attn.M_w

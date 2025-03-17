@@ -164,8 +164,8 @@ def train_seq2seq(
 def predict_seq2seq(net : EncoderDecoder, src_indices : torch.Tensor, tgt_vocab : Vocabulary, num_steps : int):
     net.eval()
     X_enc = src_indices.unsqueeze(0) # Only one batch -> [1, num_steps]
-    Y_enc, H_enc = net.encoder(X_enc)
-    H = H_enc
+    Y_enc, init_state = net.encoder(X_enc)
+    H = init_state
 
     X_dec = torch.Tensor(tgt_vocab.to_indices(["<bos>"])).long().unsqueeze(0)    
     for step in range(num_steps):
