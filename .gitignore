@@ -10,4 +10,3 @@ venv/
 test.py
 .DS_Store
 tmp.*
-dataset/
