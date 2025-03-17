@@ -102,17 +102,19 @@ def heatmap(
     else:
         assert m.ndim == 2
         nrow, ncol = 1, 1
-    fig, axes = plt.subplots(nrow, ncol, squeeze=False)
+    fig, axes = plt.subplots(nrow, ncol, squeeze=False)        
     for i in range(nrow):
         for j in range(ncol):
             ax = axes[i, j]
+            if i == 0 == j == 0:
+                ax.set_title(title)
             if m.ndim == 4:
                 ax.imshow(m[i, j].detach().cpu().numpy(), cmap=cmap)
             else:
                 ax.imshow(m.detach().cpu().numpy(), cmap=cmap)
             ax.set_xlabel(label_x)
-            ax.set_ylabel(label_y)
-            ax.set_title(title)
+            if j == 0:
+                ax.set_ylabel(label_y)
     fig.colorbar(ax.get_images()[0], ax=axes, orientation="vertical")
 
 
